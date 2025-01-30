@@ -24,6 +24,7 @@ const ImagePickerModal = ({ onClose }) => {
   useEffect(() => {
     if (isMobile && galleryInputRef.current) {
       galleryInputRef.current.click();
+      startCamera(); // Start camera alongside gallery opening
     }
   }, [isMobile]);
 
