@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { FaCamera, FaImages, FaTimes } from "react-icons/fa";
+import { FaCamera, FaImages, FaTimes } from "react-icons/fa"; // ✅ Removed front camera switch icon
 import IP_ADDRESSES from "./IPAddresses";
 import { useSearch } from "@/context/SearchContext";
 
@@ -12,21 +12,8 @@ const ImagePickerModal = ({ onClose }) => {
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(null);
   const cameraStreamRef = useRef(null);
-  const galleryInputRef = useRef(null);
-  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
   const { setSearchResults } = useSearch();
-
-  useEffect(() => {
-    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
-  }, []);
-
-  useEffect(() => {
-    if (isMobile && galleryInputRef.current) {
-      galleryInputRef.current.click();
-      startCamera(); // Start camera alongside gallery opening
-    }
-  }, [isMobile]);
 
   const startCamera = async () => {
     try {
@@ -35,30 +22,75 @@ const ImagePickerModal = ({ onClose }) => {
         setCameraPermission(false);
         return;
       }
-
+  
       const permission = await navigator.permissions.query({ name: "camera" });
+  
       if (permission.state === "denied") {
         console.error("Camera permission denied by user settings.");
         setCameraPermission(false);
         return;
       }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-
-      setCameraEnabled(true);
-      setCameraPermission(true);
-
-      if (cameraStreamRef.current) {
-        cameraStreamRef.current.srcObject = stream;
-      }
+  
+      // ✅ Ensure user clicks a button first
+      document.body.addEventListener(
+        "click",
+        async () => {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }, // ✅ Use only the back camera
+          });
+  
+          setCameraEnabled(true);
+          setCameraPermission(true);
+  
+          if (cameraStreamRef.current) {
+            cameraStreamRef.current.srcObject = stream;
+  
+            // ✅ Force a refresh to fix black screen issue on Android
+            setTimeout(() => {
+              cameraStreamRef.current.load();
+            }, 500);
+          }
+        },
+        { once: true } // Ensures it only runs once per click event
+      );
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
     }
   };
+  
+  
 
+  // ✅ Stops camera properly when component unmounts
+  const stopCamera = () => {
+    if (cameraStreamRef.current?.srcObject) {
+      cameraStreamRef.current.srcObject.getTracks().forEach((track) => track.stop());
+    }
+  };
+
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, []);
+
+  // ✅ Capture image from camera and upload
+  const captureImage = async () => {
+    if (cameraStreamRef.current) {
+      const video = cameraStreamRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+      const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
+
+      setPhotoUri(URL.createObjectURL(blob));
+      await uploadImage(file);
+    }
+  };
+
+  // ✅ Select image from gallery and upload
   const selectFromGallery = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -67,6 +99,7 @@ const ImagePickerModal = ({ onClose }) => {
     }
   };
 
+  // ✅ Upload image to backend
   const uploadImage = async (file) => {
     setIsUploading(true);
     try {
@@ -106,26 +139,30 @@ const ImagePickerModal = ({ onClose }) => {
       <div className="relative bg-black w-full h-full flex flex-col items-center justify-center">
         {isUploading ? (
           <p className="text-white text-lg">Uploading...</p>
-        ) : (
+        ) : cameraEnabled && cameraPermission ? (
           <>
-            {isMobile ? (
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                ref={galleryInputRef}
-                onChange={selectFromGallery}
-              />
-            ) : (
-              <>
-                <video ref={cameraStreamRef} autoPlay className="w-full h-3/4 object-cover" />
-                <button onClick={startCamera} className="bg-white p-4 rounded-full hover:bg-gray-200">
-                  <FaCamera className="text-black text-3xl" />
-                </button>
-              </>
-            )}
+            <video ref={cameraStreamRef} autoPlay className="w-full h-3/4 object-cover" />
+
+            <div className="absolute bottom-5 flex justify-center space-x-6">
+              {/* ✅ Capture Image */}
+              <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
+                <FaCamera className="text-black text-3xl" />
+              </button>
+
+              {/* ✅ Select from Gallery */}
+              <label className="bg-white p-4 rounded-full hover:bg-gray-200 cursor-pointer">
+                <FaImages className="text-black text-3xl" />
+                <input type="file" accept="image/*" className="hidden" onChange={selectFromGallery} />
+              </label>
+            </div>
           </>
+        ) : (
+          <button onClick={startCamera} className="text-white text-lg p-3 bg-gray-800 rounded-lg">
+            Tap to Enable Camera
+          </button>
         )}
+
+        {/* ✅ Close Modal */}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
           <FaTimes className="text-black text-2xl" />
         </button>
