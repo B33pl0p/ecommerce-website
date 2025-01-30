@@ -1,4 +1,4 @@
-"use clients"
+"use client"
 import Image from "next/image";
 import { FaBell, FaComment } from "react-icons/fa6";
 
