@@ -44,11 +44,7 @@ const ImagePickerModal = ({ onClose }) => {
   
           if (cameraStreamRef.current) {
             cameraStreamRef.current.srcObject = stream;
-  
-            // ✅ Force a refresh to fix black screen issue on Android
-            setTimeout(() => {
-              cameraStreamRef.current.load();
-            }, 500);
+        
           }
         },
         { once: true } // Ensures it only runs once per click event
