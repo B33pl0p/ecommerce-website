@@ -2,31 +2,62 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { FaTimes } from "react-icons/fa";
+import { FaCamera, FaImages, FaTimes } from "react-icons/fa";
 import IP_ADDRESSES from "./IPAddresses";
 import { useSearch } from "@/context/SearchContext";
 
 const ImagePickerModal = ({ onClose }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [photoUri, setPhotoUri] = useState(null);
-  const galleryInputRef = useRef(null); // ✅ Reference for gallery input
-  const [isMobile, setIsMobile] = useState(false); // ✅ Detect mobile (iOS & Android)
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [cameraPermission, setCameraPermission] = useState(null);
+  const cameraStreamRef = useRef(null);
+  const galleryInputRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
   const { setSearchResults } = useSearch();
 
-  // ✅ Detect if device is iOS or Android
   useEffect(() => {
     setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
   }, []);
 
-  // ✅ Auto-open gallery when modal opens on mobile
   useEffect(() => {
     if (isMobile && galleryInputRef.current) {
       galleryInputRef.current.click();
     }
   }, [isMobile]);
 
-  // ✅ Handle image selection
+  const startCamera = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error("Camera API not supported.");
+        setCameraPermission(false);
+        return;
+      }
+
+      const permission = await navigator.permissions.query({ name: "camera" });
+      if (permission.state === "denied") {
+        console.error("Camera permission denied by user settings.");
+        setCameraPermission(false);
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+
+      setCameraEnabled(true);
+      setCameraPermission(true);
+
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      setCameraPermission(false);
+    }
+  };
+
   const selectFromGallery = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -35,7 +66,6 @@ const ImagePickerModal = ({ onClose }) => {
     }
   };
 
-  // ✅ Upload image to backend
   const uploadImage = async (file) => {
     setIsUploading(true);
     try {
@@ -76,19 +106,25 @@ const ImagePickerModal = ({ onClose }) => {
         {isUploading ? (
           <p className="text-white text-lg">Uploading...</p>
         ) : (
-          <div className="absolute bottom-5 flex justify-center space-x-6">
-            {/* ✅ Hidden File Input (Auto-Triggers on Mobile) */}
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              ref={galleryInputRef}
-              onChange={selectFromGallery}
-            />
-          </div>
+          <>
+            {isMobile ? (
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={galleryInputRef}
+                onChange={selectFromGallery}
+              />
+            ) : (
+              <>
+                <video ref={cameraStreamRef} autoPlay className="w-full h-3/4 object-cover" />
+                <button onClick={startCamera} className="bg-white p-4 rounded-full hover:bg-gray-200">
+                  <FaCamera className="text-black text-3xl" />
+                </button>
+              </>
+            )}
+          </>
         )}
-
-        {/* ✅ Close Modal */}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
           <FaTimes className="text-black text-2xl" />
         </button>
