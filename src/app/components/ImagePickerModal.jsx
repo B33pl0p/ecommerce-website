@@ -23,7 +23,6 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
   
-      // ✅ Ensure user clicks a button first (Fixes Vercel + Mobile blocking issues)
       const permission = await navigator.permissions.query({ name: "camera" });
   
       if (permission.state === "denied") {
@@ -32,12 +31,12 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
   
-      // ✅ Only request camera on user click (Fixes Android + iOS)
+      // ✅ Ensure user clicks a button first
       document.body.addEventListener(
         "click",
         async () => {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
+            video: { facingMode: "environment" }, // ✅ Use only the back camera
           });
   
           setCameraEnabled(true);
@@ -45,15 +44,21 @@ const ImagePickerModal = ({ onClose }) => {
   
           if (cameraStreamRef.current) {
             cameraStreamRef.current.srcObject = stream;
+  
+            // ✅ Force a refresh to fix black screen issue on Android
+            setTimeout(() => {
+              cameraStreamRef.current.load();
+            }, 500);
           }
         },
-        { once: true } // ✅ Ensures it only runs once per click
+        { once: true } // Ensures it only runs once per click event
       );
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
     }
   };
+  
   
 
   // ✅ Stops camera properly when component unmounts
