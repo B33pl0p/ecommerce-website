@@ -15,7 +15,6 @@ const ImagePickerModal = ({ onClose }) => {
   const router = useRouter();
   const { setSearchResults } = useSearch();
 
-  // ✅ Start the camera (Back Camera Only - No front camera switching)
   const startCamera = async () => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -23,30 +22,39 @@ const ImagePickerModal = ({ onClose }) => {
         setCameraPermission(false);
         return;
       }
-
-      // ✅ Request permission before accessing camera
+  
+      // ✅ Ensure user clicks a button first (Fixes Vercel + Mobile blocking issues)
       const permission = await navigator.permissions.query({ name: "camera" });
+  
       if (permission.state === "denied") {
         console.error("Camera permission denied by user settings.");
         setCameraPermission(false);
         return;
       }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }, // ✅ Removed front camera option
-      });
-
-      setCameraEnabled(true);
-      setCameraPermission(true);
-
-      if (cameraStreamRef.current) {
-        cameraStreamRef.current.srcObject = stream;
-      }
+  
+      // ✅ Only request camera on user click (Fixes Android + iOS)
+      document.body.addEventListener(
+        "click",
+        async () => {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+          });
+  
+          setCameraEnabled(true);
+          setCameraPermission(true);
+  
+          if (cameraStreamRef.current) {
+            cameraStreamRef.current.srcObject = stream;
+          }
+        },
+        { once: true } // ✅ Ensures it only runs once per click
+      );
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
     }
   };
+  
 
   // ✅ Stops camera properly when component unmounts
   const stopCamera = () => {
