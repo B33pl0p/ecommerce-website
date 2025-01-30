@@ -1,6 +1,5 @@
 const IP_ADDRESSES = {
-    IP : 'api.aiecommerce.me',
-    PORT : '3000',
+    IP : 'https://api.aiecommerce.me',
     
   };
   
