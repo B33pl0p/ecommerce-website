@@ -1,5 +1,5 @@
 const IP_ADDRESSES = {
-    IP : 'https://35.208.134.226',
+    IP : 'https://api.ecommerce.me',
     PORT : '3000',
     
   };

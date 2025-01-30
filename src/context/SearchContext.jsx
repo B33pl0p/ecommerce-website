@@ -7,9 +7,10 @@ const SearchContext = createContext();
 // Provider Component
 export const SearchProvider = ({ children }) => {
   const [searchResults, setSearchResults] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null); // ✅ Store selected product
 
   return (
-    <SearchContext.Provider value={{ searchResults, setSearchResults }}>
+    <SearchContext.Provider value={{ searchResults, setSearchResults, selectedProduct, setSelectedProduct }}>
       {children}
     </SearchContext.Provider>
   );

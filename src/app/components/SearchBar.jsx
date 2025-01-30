@@ -35,7 +35,7 @@ export default function SearchBar() {
       e.preventDefault();
 
       try {
-        const response = await axios.post(`${IP_ADDRESSES.IP}:${IP_ADDRESSES.PORT}/upload_text`, { query_text: query },
+        const response = await axios.post(`${IP_ADDRESSES.IP}/upload_text`, { query_text: query },
           {
             headers: {
               "Content-Type": "application/json",

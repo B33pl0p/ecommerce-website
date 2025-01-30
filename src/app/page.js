@@ -12,7 +12,7 @@ export default function Home() {
   // Fetch products when the page loads
   useEffect(() => {
     axios
-    .get(`${IP_ADDRESSES.IP}:${IP_ADDRESSES.PORT}/products`)
+    .get(`${IP_ADDRESSES.IP}/products`)
     .then((res) => {
      // console.log("API Response:", res.data); // Debug the response here
       setProducts(res.data);

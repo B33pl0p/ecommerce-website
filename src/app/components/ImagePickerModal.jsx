@@ -54,7 +54,7 @@ const ImagePickerModal = ({ onClose }) => {
       formData.append("image", file);
 
       const response = await axios.post(
-        `${IP_ADDRESSES.IP}:${IP_ADDRESSES.PORT}/upload_image`,
+        `${IP_ADDRESSES.IP}/upload_image`,
         formData,
         {
           headers: {
