@@ -3,12 +3,15 @@ import { useSearch } from "@/context/SearchContext";
 import ProductGrid from "../components/ProductGrid";
 import SearchBar from "../components/SearchBar";
 import Link from "next/link";
+import Header from "../components/Header";
 
 export default function ResultsScreen() {
   const { searchResults } = useSearch();
 
   return (
     <div className="container mx-auto px-6">
+      <Header>
+      </Header>
       {/* ✅ Search Bar for New Searches */}
       <div className="mt-6 mb-4">
         <SearchBar />

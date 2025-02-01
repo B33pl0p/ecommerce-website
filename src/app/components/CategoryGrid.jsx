@@ -1,43 +1,29 @@
-import {
-  FaMicrochip,
-  FaBowlFood,
-  FaShirt,
-  FaBook,
-  FaCar,
-  FaMusic,
-  FaGamepad,
-  FaDesktop,
-} from "react-icons/fa6";
-import { FaSmile } from "react-icons/fa";
-import { MdTableRestaurant } from "react-icons/md";
-import { AiFillMedicineBox } from "react-icons/ai";
+import { useState } from "react";
+import categories from "./categories"; // ✅ Import category list
 
-const categories = [
-  { id: "1", name: "Electronics", icon: <FaMicrochip /> },
-  { id: "2", name: "Foods & Drinks", icon: <FaBowlFood /> },
-  { id: "3", name: "Beauty", icon: <FaSmile /> },
-  { id: "4", name: "Furnitures", icon: <MdTableRestaurant /> },
-  { id: "5", name: "Fashion", icon: <FaShirt /> },
-  { id: "6", name: "Health", icon: <AiFillMedicineBox /> },
-  { id: "7", name: "Stationery", icon: <FaBook /> },
-  { id: "8", name: "Vehicles", icon: <FaCar /> },
-  { id: "9", name: "Musical instruments", icon: <FaMusic /> },
-  { id: "10", name: "Video Games", icon: <FaGamepad /> },
-  { id: "11", name: "Computers", icon: <FaDesktop /> },
-];
+const CategoryGrid = ({ onSelectCategory }) => {
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-const CategoryGrid = () => {
+  const handleCategoryClick = (categoryName) => {
+    setSelectedCategory(categoryName);
+    onSelectCategory(categoryName); // ✅ Fetch filtered products
+  };
+
   return (
     <div className="w-full overflow-x-auto py-4 scrollbar-hide">
       <div className="flex space-x-6 px-4">
         {categories.map((category) => (
-          <div key={category.id} className="flex flex-col items-center">
-            {/* Oval Container */}
-            <div className="w-32 h-12 flex justify-center items-center bg-gray-200 text-black rounded-full text-xl">
+          <div
+            key={category.id}
+            onClick={() => handleCategoryClick(category.name)}
+            className={`flex flex-col items-center cursor-pointer transition-transform transform hover:scale-110 ${
+              selectedCategory === category.name ? "text-blue-600" : "text-black"
+            }`}
+          >
+            <div className="w-32 h-12 flex justify-center items-center bg-gray-200 rounded-full text-xl">
               {category.icon}
             </div>
-            {/* Category Name */}
-            <p className="text-sm text-center mt-2 text-black">{category.name}</p>
+            <p className="text-sm text-center mt-2">{category.name}</p>
           </div>
         ))}
       </div>

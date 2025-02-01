@@ -6,29 +6,49 @@ import ProductGrid from "./components/ProductGrid";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import IP_ADDRESSES from "./components/IPAddresses";
+
 export default function Home() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch products when the page loads
+  // Fetch all products when the page loads
   useEffect(() => {
-    axios
-    .get(`${IP_ADDRESSES.IP}/products`)
-    .then((res) => {
-     // console.log("API Response:", res.data); // Debug the response here
-      setProducts(res.data);
-    })
-      .catch((err) => console.error("Error fetching products:", err));
+    fetchProducts();
   }, []);
-  console.log(products)
+
+  // ✅ Function to fetch all products OR filter by category
+  const fetchProducts = async (category = null) => {
+    setLoading(true);
+    try {
+      const endpoint = category
+        ? `${IP_ADDRESSES.IP}/products?random=true&master_category=${encodeURIComponent(category)}`
+        : `${IP_ADDRESSES.IP}/products`;
+
+      const response = await axios.get(endpoint);
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="home-container bg-white">
       <Header />
       <SearchBar />
-      <CategoryGrid />
 
-      {/* Product Section */}
+      {/* ✅ Pass fetchProducts to CategoryGrid for filtering */}
+      <CategoryGrid onSelectCategory={fetchProducts} />
+
       <h2 className="text-2xl font-semibold text-gray-700 text-center mt-8">Featured Products</h2>
-      <ProductGrid products={products} /> {/* Pass full product JSON */}
+
+      {/* ✅ Show loading message when fetching */}
+      {loading ? (
+        <p className="text-center text-gray-500 mt-4">Loading products...</p>
+      ) : (
+        <ProductGrid products={products} /> // ✅ Pass the updated products
+      )}
     </div>
   );
 }
