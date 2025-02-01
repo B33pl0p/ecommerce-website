@@ -38,13 +38,17 @@ const ImagePickerModal = ({ onClose }) => {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" }, // ✅ Use only the back camera
           });
-  
+  2
           setCameraEnabled(true);
           setCameraPermission(true);
   
           if (cameraStreamRef.current) {
             cameraStreamRef.current.srcObject = stream;
-        
+  
+            // ✅ Force a refresh to fix black screen issue on Android
+            setTimeout(() => {
+              cameraStreamRef.current.load();
+            }, 500);
           }
         },
         { once: true } // Ensures it only runs once per click event
@@ -153,8 +157,8 @@ const ImagePickerModal = ({ onClose }) => {
             </div>
           </>
         ) : (
-          <button onClick={startCamera} className="text-white text-lg p-3 bg-gray-800 rounded-lg">
-            Tap to Enable Camera
+          <button onClick={startCamera} className="text-white text-base p-3 bg-gray-800 rounded-lg">
+            Tap to Enable Camera permissions, you might need to click on the camera button again after granting permissions.
           </button>
         )}
 

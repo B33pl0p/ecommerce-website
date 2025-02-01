@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useSearch } from "@/context/SearchContext";
+
 const ProductGrid = ({ products }) => {
   const { setSelectedProduct } = useSearch(); // ✅ Get function to store product in Context API
 
@@ -22,7 +23,10 @@ const ProductGrid = ({ products }) => {
           <h3 className="text-lg font-medium text-gray-800 mt-2 line-clamp-2 lg:text-xl lg:mt-4">
             {product.name}
           </h3>
-          <p className="text-gray-600 md:text-lg">{product.price ? `$${product.price}` : "Price: N/A"}</p>
+          <p className="text-sm text-gray-500"> Category: {product.category || "Uncategorized"}</p> {/* Display Category */}
+          <p className="text-gray-600 md:text-lg">
+            {product.price ? `Rs ${product.price}` : "Price: N/A"}
+          </p>
 
           {/* View Details Button */}
           <Link href="/product" passHref>
