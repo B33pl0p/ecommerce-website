@@ -33,7 +33,7 @@ export default function SearchBar() {
   // ✅ Handle text search submission when user presses Enter
   const handleKeyDown = async (e) => {
     if (e.key === "Enter" && query.trim()) {
-      e.preventDefault();
+     
 
       try {
         const response = await axios.post(
