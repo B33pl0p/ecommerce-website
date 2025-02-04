@@ -6,7 +6,7 @@ import axios from "axios";
 import ImagePickerModal from "./ImagePickerModal";
 import IP_ADDRESSES from "./IPAddresses";
 import { useSearch } from "@/context/SearchContext";
-import { FaCamera } from "react-icons/fa"; // ✅ Proper camera icon
+import { FaCamera, FaSearch } from "react-icons/fa"; // ✅ Proper camera icon
 
 export default function SearchBar() {
   const [query, setQuery] = useState(""); // ✅ Store search query
@@ -72,23 +72,18 @@ export default function SearchBar() {
         onKeyDown={handleKeyDown} // ✅ Detect Enter key press
         className="flex-grow p-3 text-black outline-none rounded-l-md focus:ring-2 focus:ring-blue-500"
       />
+      {/* ✅ Submit Button */}
+      <button   onClick={() => handleKeyDown({ key: "Enter" })} className="p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center mx-0.5">
+        <FaSearch className="w-6 h-6" />
+      </button>
 
       {/* ✅ Camera Icon Button */}
-      <button
-        onClick={openImagePicker}
-        className="p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md flex items-center justify-center"
-      >
+      <button onClick={openImagePicker} className="p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center">
         <FaCamera className="w-6 h-6" />
       </button>
 
       {/* ✅ Image Picker Modal */}
-      {isModalOpen && (
-        <ImagePickerModal
-          isOpen={isModalOpen}
-          onClose={closeImagePicker}
-          onImageSelected={handleImageSelected}
-        />
-      )}
+      {isModalOpen && <ImagePickerModal isOpen={isModalOpen} onClose={closeImagePicker} onImageSelected={handleImageSelected} />}
     </div>
   );
 }

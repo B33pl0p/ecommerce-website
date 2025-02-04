@@ -12,7 +12,6 @@ export default function ResultsScreen() {
     <div className="container mx-auto px-6">
       <Header>
       </Header>
-      {/* ✅ Search Bar for New Searches */}
       <div className="mt-6 mb-4">
         <SearchBar />
       </div>
