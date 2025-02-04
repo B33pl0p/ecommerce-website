@@ -23,7 +23,7 @@ export default function Home() {
     try {
       const endpoint = category
         ? `${IP_ADDRESSES.IP}/products?random=true&master_category=${encodeURIComponent(category)}&limit=10&skip=${reset ? 0 : page * 10}`
-        : `${IP_ADDRESSES.IP}/products?limit=10&skip=${reset ? 0 : page * 10}`;
+        : `${IP_ADDRESSES.IP}/products?random=true&limit=10&skip=${reset ? 0 : page * 10}`;
 
       const response = await axios.get(endpoint);
 
