@@ -100,32 +100,34 @@ const ImagePickerModal = ({ onClose }) => {
   };
 
   // ✅ Upload image to backend
-  const uploadImage = async (file) => {
+  const uploadImage = async (file, threshold = 0.8, retryCount = 0) => {
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append("image", file);
-
+  
       const response = await axios.post(
         `${IP_ADDRESSES.IP}/upload_image`,
         formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
+          params: { similarity_threshold: threshold } // Send threshold to backend
         }
       );
-
+  
       const data = response.data.result;
-      console.log("API Response:", data);
-
-      if (data) {
+  
+      if (data.length > 0) {
         setSearchResults(data);
         router.push("/ResultsScreen");
+      } else if (retryCount < 2) {
+        // Reduce threshold and retry
+        console.warn(`No results found, retrying with lower threshold: ${threshold - 0.1}`);
+        await uploadImage(file, threshold - 0.1, retryCount + 1);
       } else {
-        console.error("No products found.");
+        console.error("No products found after retries.");
       }
-
+  
       onClose();
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -133,6 +135,7 @@ const ImagePickerModal = ({ onClose }) => {
       setIsUploading(false);
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
