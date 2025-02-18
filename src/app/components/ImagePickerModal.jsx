@@ -29,20 +29,20 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
       
-      const permission = await navigator.permissions.query({ name: "camera" });
-      if (permission.state === "denied") {
-        console.error("Camera permission denied by user settings.");
-        setCameraPermission(false);
-        return;
-      }
-
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
+      
       setCameraEnabled(true);
       setCameraPermission(true);
+      
       if (cameraStreamRef.current) {
         cameraStreamRef.current.srcObject = stream;
+        setTimeout(() => {
+          if (cameraStreamRef.current) {
+            cameraStreamRef.current.play();
+          }
+        }, 500);
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -106,7 +106,7 @@ const ImagePickerModal = ({ onClose }) => {
           <p className="text-white text-lg">Uploading...</p>
         ) : cameraEnabled && cameraPermission ? (
           <>
-            <video ref={cameraStreamRef} autoPlay className="w-full h-3/4 object-cover" />
+            <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-3/4 object-cover" />
             <div className="absolute bottom-5 flex justify-center space-x-6">
               <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
                 <FaCamera className="text-black text-3xl" />
