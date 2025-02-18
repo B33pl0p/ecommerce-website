@@ -135,12 +135,12 @@ const ImagePickerModal = ({ onClose }) => {
       <div className="relative bg-black w-full h-full flex flex-col items-center justify-center">
         {isUploading ? (
           <p className="text-white text-lg">Uploading...</p>
-        ) : cameraEnabled && cameraPermission ? (
+        ) : (
           <>
             <div className="relative w-full h-full">
               <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
             </div>
-
+  
             <div className="absolute bottom-5 flex justify-center space-x-6">
               <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
                 <FaCamera className="text-black text-3xl" />
@@ -151,10 +151,6 @@ const ImagePickerModal = ({ onClose }) => {
               </label>
             </div>
           </>
-        ) : (
-          <button onClick={startCamera} className="text-white text-base p-3 bg-gray-800 rounded-lg">
-            Tap to Enable Camera permissions
-          </button>
         )}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
           <FaTimes className="text-black text-2xl" />
@@ -162,6 +158,7 @@ const ImagePickerModal = ({ onClose }) => {
       </div>
     </div>
   );
+  
 };
 
 export default ImagePickerModal;
