@@ -29,6 +29,8 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
   
+      stopCamera(); // Stop any existing camera stream before starting a new one
+  
       console.log("Requesting camera permission...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -36,7 +38,6 @@ const ImagePickerModal = ({ onClose }) => {
   
       console.log("Camera stream received:", stream);
   
-      // Ensure at least one video track is active
       const videoTrack = stream.getVideoTracks()[0];
       if (!videoTrack || !videoTrack.enabled) {
         console.error("No active video track found.");
@@ -48,12 +49,11 @@ const ImagePickerModal = ({ onClose }) => {
   
       if (cameraStreamRef.current) {
         cameraStreamRef.current.srcObject = stream;
-  
-        cameraStreamRef.current.onloadedmetadata = async () => {
+        cameraStreamRef.current.muted = true; // Ensure autoplay works
+        cameraStreamRef.current.oncanplay = async () => {
           try {
-            console.log("Metadata loaded, attempting to play...");
+            console.log("Camera is ready, attempting to play...");
             await cameraStreamRef.current.play();
-            console.log("Camera is now playing.");
           } catch (error) {
             console.error("Error playing video stream:", error);
           }
@@ -64,6 +64,7 @@ const ImagePickerModal = ({ onClose }) => {
       setCameraPermission(false);
     }
   };
+  
   
 
   const stopCamera = () => {
