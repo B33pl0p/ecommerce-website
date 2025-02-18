@@ -140,25 +140,25 @@ const ImagePickerModal = ({ onClose }) => {
             <div className="relative w-full h-full">
               <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
             </div>
-            <div className="absolute bottom-5 flex justify-center space-x-6">
-              <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
-                <FaCamera className="text-black text-3xl" />
-              </button>
-              <label className="bg-white p-4 rounded-full hover:bg-gray-200 cursor-pointer">
-                <FaImages className="text-black text-3xl" />
-                <input type="file" accept="image/*" className="hidden" onChange={selectFromGallery} />
-              </label>
+            <div className="absolute bottom-5 flex flex-col items-center space-y-4">
+              {showClickMessage && (
+                <p className="text-white text-lg">Click anywhere to start the camera preview</p>
+              )}
+              <div className="flex justify-center space-x-6">
+                <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
+                  <FaCamera className="text-black text-3xl" />
+                </button>
+                <label className="bg-white p-4 rounded-full hover:bg-gray-200 cursor-pointer">
+                  <FaImages className="text-black text-3xl" />
+                  <input type="file" accept="image/*" className="hidden" onChange={selectFromGallery} />
+                </label>
+              </div>
             </div>
           </>
         ) : (
-          <>
-            <button onClick={startCamera} className="text-white text-base p-3 bg-gray-800 rounded-lg">
-              Tap to Enable Camera
-            </button>
-            {showClickMessage && (
-              <p className="text-white text-lg mt-4">Click anywhere to start the camera preview</p>
-            )}
-          </>
+          <button onClick={startCamera} className="text-white text-base p-3 bg-gray-800 rounded-lg">
+            Tap to Enable Camera
+          </button>
         )}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
           <FaTimes className="text-black text-2xl" />
