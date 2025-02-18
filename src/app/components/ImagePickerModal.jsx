@@ -28,18 +28,14 @@ const ImagePickerModal = ({ onClose }) => {
         setCameraPermission(false);
         return;
       }
-  
-      console.log("Requesting camera permission...");
-  
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-  
-      console.log("Camera stream received:", stream);
-  
+      
       setCameraEnabled(true);
       setCameraPermission(true);
-  
+      
       if (cameraStreamRef.current) {
         cameraStreamRef.current.srcObject = stream;
         cameraStreamRef.current.onloadedmetadata = () => {
@@ -51,7 +47,6 @@ const ImagePickerModal = ({ onClose }) => {
       setCameraPermission(false);
     }
   };
-  
 
   const stopCamera = () => {
     if (cameraStreamRef.current?.srcObject) {
@@ -68,6 +63,11 @@ const ImagePickerModal = ({ onClose }) => {
       canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
       
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+      if (!blob) {
+        console.error("Failed to capture image from camera.");
+        return;
+      }
+      
       const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
       setPhotoUri(URL.createObjectURL(blob));
       await uploadImage(file);
@@ -134,3 +134,4 @@ const ImagePickerModal = ({ onClose }) => {
 };
 
 export default ImagePickerModal;
+..
