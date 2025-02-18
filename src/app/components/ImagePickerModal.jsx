@@ -1,20 +1,26 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import categories from "./categories";
 import { useRouter } from "next/navigation";
 import { FaCamera, FaImages, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import IP_ADDRESSES from "./IPAddresses";
 import { useSearch } from "@/context/SearchContext";
 
+
 const ImagePickerModal = ({ onClose }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [photoUri, setPhotoUri] = useState(null);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(null);
-  const [showClickMessage, setShowClickMessage] = useState(false); // Show "Click anywhere" message
   const cameraStreamRef = useRef(null);
   const { setSearchResults } = useSearch();
   const router = useRouter();
+
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, []);
 
   const startCamera = async () => {
     try {
@@ -31,13 +37,10 @@ const ImagePickerModal = ({ onClose }) => {
         setCameraPermission(false);
         return;
       }
-
+      
+      alert("Tap anywhere on the screen to start camera")
       console.log("Waiting for user interaction...");
-
-      // Show "Click anywhere" message
-      setShowClickMessage(true);
-
-      // Attach a click event listener to start the camera
+        
       document.body.addEventListener(
         "click",
         async () => {
@@ -54,11 +57,8 @@ const ImagePickerModal = ({ onClose }) => {
           if (cameraStreamRef.current) {
             cameraStreamRef.current.srcObject = stream;
           }
-
-          // Hide the "Click anywhere" message
-          setShowClickMessage(false);
         },
-        { once: true } // Only listen for the first click
+        { once: true } // Runs only once to prevent multiple calls
       );
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -140,24 +140,20 @@ const ImagePickerModal = ({ onClose }) => {
             <div className="relative w-full h-full">
               <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
             </div>
-            <div className="absolute bottom-5 flex flex-col items-center space-y-4">
-              {showClickMessage && (
-                <p className="text-white text-lg">Click anywhere to start the camera preview</p>
-              )}
-              <div className="flex justify-center space-x-6">
-                <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
-                  <FaCamera className="text-black text-3xl" />
-                </button>
-                <label className="bg-white p-4 rounded-full hover:bg-gray-200 cursor-pointer">
-                  <FaImages className="text-black text-3xl" />
-                  <input type="file" accept="image/*" className="hidden" onChange={selectFromGallery} />
-                </label>
-              </div>
+
+            <div className="absolute bottom-5 flex justify-center space-x-6">
+              <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
+                <FaCamera className="text-black text-3xl" />
+              </button>
+              <label className="bg-white p-4 rounded-full hover:bg-gray-200 cursor-pointer">
+                <FaImages className="text-black text-3xl" />
+                <input type="file" accept="image/*" className="hidden" onChange={selectFromGallery} />
+              </label>
             </div>
           </>
         ) : (
           <button onClick={startCamera} className="text-white text-base p-3 bg-gray-800 rounded-lg">
-            Tap to Enable Camera
+            Tap to Enable Camera permissions
           </button>
         )}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
