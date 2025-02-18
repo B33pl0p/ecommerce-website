@@ -37,7 +37,7 @@ export default function ProductPage() {
       <div className="w-full lg:w-1/2 text-center lg:text-left lg:pl-8 mt-6 lg:mt-0">
         <h1 className="text-3xl font-bold">{selectedProduct.name}</h1>
         <p className="text-gray-700 text-lg mt-2">
-          {selectedProduct.price ? `Price: Rs ${selectedProduct.price.toFixed(2)}` : "Price: N/A"}
+          {selectedProduct.price ? `Price: Rs ${selectedProduct.price}` : "Price: N/A"}
         </p>
         <p className="text-gray-600 mt-2">
           <strong>Category:</strong> {selectedProduct.category || "Unknown"}
