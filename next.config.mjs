@@ -3,12 +3,11 @@ const nextConfig = {
     async headers() {
       return [
         {
-          // Apply the header to all routes
-          source: '/(.*)',
+          source: "/(.*)",
           headers: [
             {
-              key: 'Permissions-Policy',
-              value: 'camera=()', // Allow camera access
+              key: "Permissions-Policy",
+              value: "camera=(), microphone=(), geolocation=()",
             },
           ],
         },
@@ -17,3 +16,4 @@ const nextConfig = {
   };
   
   export default nextConfig;
+  

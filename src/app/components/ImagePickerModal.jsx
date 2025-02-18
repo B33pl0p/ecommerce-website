@@ -28,14 +28,18 @@ const ImagePickerModal = ({ onClose }) => {
         setCameraPermission(false);
         return;
       }
-      
+  
+      console.log("Requesting camera permission...");
+  
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      
+  
+      console.log("Camera stream received:", stream);
+  
       setCameraEnabled(true);
       setCameraPermission(true);
-      
+  
       if (cameraStreamRef.current) {
         cameraStreamRef.current.srcObject = stream;
         cameraStreamRef.current.onloadedmetadata = () => {
@@ -47,6 +51,7 @@ const ImagePickerModal = ({ onClose }) => {
       setCameraPermission(false);
     }
   };
+  
 
   const stopCamera = () => {
     if (cameraStreamRef.current?.srcObject) {
