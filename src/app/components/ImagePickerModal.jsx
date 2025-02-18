@@ -28,30 +28,30 @@ const ImagePickerModal = ({ onClose }) => {
         setCameraPermission(false);
         return;
       }
-  
+
       const permission = await navigator.permissions.query({ name: "camera" });
-  
+
       if (permission.state === "denied") {
         console.error("Camera permission denied by user settings.");
         setCameraPermission(false);
         return;
       }
-  
+
       console.log("Waiting for user interaction...");
-  
+
       document.body.addEventListener(
         "click",
         async () => {
           console.log("User clicked, starting camera...");
-  
+
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
           });
-  
+
           console.log("Camera stream received:", stream);
           setCameraEnabled(true);
           setCameraPermission(true);
-  
+
           if (cameraStreamRef.current) {
             cameraStreamRef.current.srcObject = stream;
           }
@@ -63,10 +63,6 @@ const ImagePickerModal = ({ onClose }) => {
       setCameraPermission(false);
     }
   };
-  
-  
-  
-  
 
   const stopCamera = () => {
     if (cameraStreamRef.current?.srcObject) {
@@ -77,37 +73,36 @@ const ImagePickerModal = ({ onClose }) => {
   const captureImage = async () => {
     if (cameraStreamRef.current) {
       const video = cameraStreamRef.current;
-  
+
       // Ensure video is playing before capturing
       if (video.readyState !== 4) {
         console.error("Video is not ready yet.");
         return;
       }
-  
+
       const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth || 640; // Fallback width
       canvas.height = video.videoHeight || 480; // Fallback height
       const ctx = canvas.getContext("2d");
-  
+
       if (!ctx) {
         console.error("Canvas context not available.");
         return;
       }
-  
+
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
+
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
       if (!blob) {
         console.error("Failed to capture image from camera.");
         return;
       }
-  
+
       const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
       setPhotoUri(URL.createObjectURL(blob));
       await uploadImage(file);
     }
   };
-  
 
   const selectFromGallery = async (event) => {
     const file = event.target.files[0];
@@ -122,11 +117,7 @@ const ImagePickerModal = ({ onClose }) => {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const response = await axios.post(
-        `${IP_ADDRESSES.IP}/upload_image?similarity_threshold=0.7`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const response = await axios.post(`${IP_ADDRESSES.IP}/upload_image?similarity_threshold=0.7`, formData, { headers: { "Content-Type": "multipart/form-data" } });
       setSearchResults(response.data.result);
       router.push("/ResultsScreen");
       onClose();
@@ -145,9 +136,10 @@ const ImagePickerModal = ({ onClose }) => {
         ) : cameraEnabled && cameraPermission ? (
           <>
             <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
-            <div>tap anywhere to start camera</div>
+            {!cameraEnabled && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-lg font-semibold animate-pulse">Tap anywhere to start camera</div>
+            )}
             <div className="absolute bottom-5 flex justify-center space-x-6">
-              
               <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
                 <FaCamera className="text-black text-3xl" />
               </button>
