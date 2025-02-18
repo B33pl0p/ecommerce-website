@@ -64,22 +64,37 @@ const ImagePickerModal = ({ onClose }) => {
   const captureImage = async () => {
     if (cameraStreamRef.current) {
       const video = cameraStreamRef.current;
+  
+      // Ensure video is playing before capturing
+      if (video.readyState !== 4) {
+        console.error("Video is not ready yet.");
+        return;
+      }
+  
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+      canvas.width = video.videoWidth || 640; // Fallback width
+      canvas.height = video.videoHeight || 480; // Fallback height
+      const ctx = canvas.getContext("2d");
+  
+      if (!ctx) {
+        console.error("Canvas context not available.");
+        return;
+      }
+  
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
       if (!blob) {
         console.error("Failed to capture image from camera.");
         return;
       }
-      
+  
       const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
       setPhotoUri(URL.createObjectURL(blob));
       await uploadImage(file);
     }
   };
+  
 
   const selectFromGallery = async (event) => {
     const file = event.target.files[0];
