@@ -29,17 +29,24 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
       
+      console.log("Requesting camera permission...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
       
+      console.log("Camera stream received:", stream);
       setCameraEnabled(true);
       setCameraPermission(true);
       
       if (cameraStreamRef.current) {
         cameraStreamRef.current.srcObject = stream;
-        cameraStreamRef.current.onloadedmetadata = () => {
-          cameraStreamRef.current.play();
+        cameraStreamRef.current.onloadedmetadata = async () => {
+          try {
+            await cameraStreamRef.current.play();
+            console.log("Camera is now playing");
+          } catch (error) {
+            console.error("Error playing video stream:", error);
+          }
         };
       }
     } catch (error) {
@@ -109,7 +116,7 @@ const ImagePickerModal = ({ onClose }) => {
           <p className="text-white text-lg">Uploading...</p>
         ) : cameraEnabled && cameraPermission ? (
           <>
-            <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-3/4 object-cover" />
+            <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
             <div className="absolute bottom-5 flex justify-center space-x-6">
               <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
                 <FaCamera className="text-black text-3xl" />
@@ -134,4 +141,3 @@ const ImagePickerModal = ({ onClose }) => {
 };
 
 export default ImagePickerModal;
-..
