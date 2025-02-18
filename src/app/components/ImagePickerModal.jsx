@@ -12,6 +12,7 @@ const ImagePickerModal = ({ onClose }) => {
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(null);
   const [isCameraLoading, setIsCameraLoading] = useState(false); // Loading state for camera
+  const [showClickMessage, setShowClickMessage] = useState(false); // Show "Click anywhere" message
   const cameraStreamRef = useRef(null);
   const { setSearchResults } = useSearch();
   const router = useRouter();
@@ -33,18 +34,30 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
 
-      // Request camera access and start the stream
+      // Request camera access
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
 
       console.log("Camera stream received:", stream);
-      setCameraEnabled(true);
       setCameraPermission(true);
 
-      if (cameraStreamRef.current) {
-        cameraStreamRef.current.srcObject = stream;
-      }
+      // Show "Click anywhere" message to start the camera preview
+      setShowClickMessage(true);
+
+      // Wait for the user to click anywhere on the screen
+      document.body.addEventListener(
+        "click",
+        () => {
+          console.log("User clicked, starting camera preview...");
+          setCameraEnabled(true);
+          if (cameraStreamRef.current) {
+            cameraStreamRef.current.srcObject = stream;
+          }
+          setShowClickMessage(false); // Hide the message
+        },
+        { once: true } // Only listen for the first click
+      );
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
@@ -138,13 +151,18 @@ const ImagePickerModal = ({ onClose }) => {
             </div>
           </>
         ) : (
-          <button
-            onClick={startCamera}
-            disabled={isCameraLoading}
-            className="text-white text-base p-3 bg-gray-800 rounded-lg"
-          >
-            {isCameraLoading ? "Starting Camera..." : "Tap to Enable Camera"}
-          </button>
+          <>
+            <button
+              onClick={startCamera}
+              disabled={isCameraLoading}
+              className="text-white text-base p-3 bg-gray-800 rounded-lg"
+            >
+              {isCameraLoading ? "Enabling Camera..." : "Tap to Enable Camera"}
+            </button>
+            {showClickMessage && (
+              <p className="text-white text-lg mt-4">Click anywhere to start the camera preview</p>
+            )}
+          </>
         )}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
           <FaTimes className="text-black text-2xl" />
