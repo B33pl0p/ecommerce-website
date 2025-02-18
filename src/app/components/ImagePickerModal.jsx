@@ -1,5 +1,6 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import categories from "./categories";
 import { useRouter } from "next/navigation";
 import { FaCamera, FaImages, FaTimes } from "react-icons/fa";
 import axios from "axios";
@@ -11,14 +12,16 @@ const ImagePickerModal = ({ onClose }) => {
   const [photoUri, setPhotoUri] = useState(null);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(null);
-  const [isCameraLoading, setIsCameraLoading] = useState(false); // Loading state for camera
-  const [showClickMessage, setShowClickMessage] = useState(false); // Show "Click anywhere" message
   const cameraStreamRef = useRef(null);
   const { setSearchResults } = useSearch();
   const router = useRouter();
 
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, []);
+
   const startCamera = async () => {
-    setIsCameraLoading(true); // Show loading state
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         console.error("Camera API not supported.");
@@ -34,35 +37,30 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
 
-      // Request camera access
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
+      console.log("Waiting for user interaction...");
 
-      console.log("Camera stream received:", stream);
-      setCameraPermission(true);
-
-      // Show "Click anywhere" message to start the camera preview
-      setShowClickMessage(true);
-
-      // Wait for the user to click anywhere on the screen
       document.body.addEventListener(
         "click",
-        () => {
-          console.log("User clicked, starting camera preview...");
+        async () => {
+          console.log("User clicked, starting camera...");
+
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+          });
+
+          console.log("Camera stream received:", stream);
           setCameraEnabled(true);
+          setCameraPermission(true);
+
           if (cameraStreamRef.current) {
             cameraStreamRef.current.srcObject = stream;
           }
-          setShowClickMessage(false); // Hide the message
         },
-        { once: true } // Only listen for the first click
+        { once: true } // Runs only once to prevent multiple calls
       );
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
-    } finally {
-      setIsCameraLoading(false); // Hide loading state
     }
   };
 
@@ -140,6 +138,7 @@ const ImagePickerModal = ({ onClose }) => {
             <div className="relative w-full h-full">
               <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
             </div>
+
             <div className="absolute bottom-5 flex justify-center space-x-6">
               <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
                 <FaCamera className="text-black text-3xl" />
@@ -151,18 +150,9 @@ const ImagePickerModal = ({ onClose }) => {
             </div>
           </>
         ) : (
-          <>
-            <button
-              onClick={startCamera}
-              disabled={isCameraLoading}
-              className="text-white text-base p-3 bg-gray-800 rounded-lg"
-            >
-              {isCameraLoading ? "Enabling Camera..." : "Tap to Enable Camera"}
-            </button>
-            {showClickMessage && (
-              <p className="text-white text-lg mt-4">Click anywhere to start the camera preview</p>
-            )}
-          </>
+          <button onClick={startCamera} className="text-white text-base p-3 bg-gray-800 rounded-lg">
+            Tap to Enable Camera permissions
+          </button>
         )}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
           <FaTimes className="text-black text-2xl" />
