@@ -38,11 +38,9 @@ const ImagePickerModal = ({ onClose }) => {
       
       if (cameraStreamRef.current) {
         cameraStreamRef.current.srcObject = stream;
-        setTimeout(() => {
-          if (cameraStreamRef.current) {
-            cameraStreamRef.current.play();
-          }
-        }, 500);
+        cameraStreamRef.current.onloadedmetadata = () => {
+          cameraStreamRef.current.play();
+        };
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
