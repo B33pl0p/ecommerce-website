@@ -29,44 +29,35 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
   
-      stopCamera(); // Stop any previous streams
+      const permission = await navigator.permissions.query({ name: "camera" });
   
-      console.log("Requesting camera permission...");
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-  
-      console.log("Camera stream received:", stream);
-      const videoTrack = stream.getVideoTracks()[0];
-      if (!videoTrack || !videoTrack.enabled) {
-        console.error("No active video track found.");
+      if (permission.state === "denied") {
+        console.error("Camera permission denied by user settings.");
+        setCameraPermission(false);
         return;
       }
   
-      setCameraEnabled(true);
-      setCameraPermission(true);
+      console.log("Waiting for user interaction...");
   
-      if (cameraStreamRef.current) {
-        cameraStreamRef.current.srcObject = stream;
-        cameraStreamRef.current.muted = true; // Mute to prevent autoplay restrictions
+      document.body.addEventListener(
+        "click",
+        async () => {
+          console.log("User clicked, starting camera...");
   
-        // Force play after user interaction
-        cameraStreamRef.current.oncanplay = async () => {
-          try {
-            console.log("Camera is ready, attempting to play...");
-            await cameraStreamRef.current.play();
-          } catch (error) {
-            console.error("Autoplay blocked, requiring manual interaction:", error);
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+          });
+  
+          console.log("Camera stream received:", stream);
+          setCameraEnabled(true);
+          setCameraPermission(true);
+  
+          if (cameraStreamRef.current) {
+            cameraStreamRef.current.srcObject = stream;
           }
-        };
-  
-        // Try forcing playback
-        setTimeout(() => {
-          if (cameraStreamRef.current && cameraEnabled) {
-            cameraStreamRef.current.play().catch(err => console.error("Play error:", err));
-          }
-        }, 500);
-      }
+        },
+        { once: true } // Runs only once to prevent multiple calls
+      );
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
