@@ -29,7 +29,7 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
   
-      stopCamera(); // Ensure old streams are stopped
+      stopCamera(); // Stop any previous streams
   
       console.log("Requesting camera permission...");
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -48,21 +48,31 @@ const ImagePickerModal = ({ onClose }) => {
   
       if (cameraStreamRef.current) {
         cameraStreamRef.current.srcObject = stream;
-        cameraStreamRef.current.muted = true;
+        cameraStreamRef.current.muted = true; // Mute to prevent autoplay restrictions
+  
+        // Force play after user interaction
         cameraStreamRef.current.oncanplay = async () => {
           try {
             console.log("Camera is ready, attempting to play...");
             await cameraStreamRef.current.play();
           } catch (error) {
-            console.error("Error playing video stream:", error);
+            console.error("Autoplay blocked, requiring manual interaction:", error);
           }
         };
+  
+        // Try forcing playback
+        setTimeout(() => {
+          if (cameraStreamRef.current && cameraEnabled) {
+            cameraStreamRef.current.play().catch(err => console.error("Play error:", err));
+          }
+        }, 500);
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
     }
   };
+  
   
   
 
