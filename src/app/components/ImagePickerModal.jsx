@@ -1,6 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import categories from "./categories";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FaCamera, FaImages, FaTimes } from "react-icons/fa";
 import axios from "axios";
@@ -12,16 +11,13 @@ const ImagePickerModal = ({ onClose }) => {
   const [photoUri, setPhotoUri] = useState(null);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(null);
+  const [isCameraLoading, setIsCameraLoading] = useState(false); // Loading state for camera
   const cameraStreamRef = useRef(null);
   const { setSearchResults } = useSearch();
   const router = useRouter();
 
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, []);
-
   const startCamera = async () => {
+    setIsCameraLoading(true); // Show loading state
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         console.error("Camera API not supported.");
@@ -37,30 +33,23 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
 
-      console.log("Waiting for user interaction...");
+      // Request camera access and start the stream
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
 
-      document.body.addEventListener(
-        "click",
-        async () => {
-          console.log("User clicked, starting camera...");
+      console.log("Camera stream received:", stream);
+      setCameraEnabled(true);
+      setCameraPermission(true);
 
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-          });
-
-          console.log("Camera stream received:", stream);
-          setCameraEnabled(true);
-          setCameraPermission(true);
-
-          if (cameraStreamRef.current) {
-            cameraStreamRef.current.srcObject = stream;
-          }
-        },
-        { once: true } // Runs only once to prevent multiple calls
-      );
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.srcObject = stream;
+      }
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
+    } finally {
+      setIsCameraLoading(false); // Hide loading state
     }
   };
 
@@ -135,17 +124,9 @@ const ImagePickerModal = ({ onClose }) => {
           <p className="text-white text-lg">Uploading...</p>
         ) : cameraEnabled && cameraPermission ? (
           <>
-          <div className="relative w-full h-full">
-            {!cameraEnabled && (
-    <div className="absolute inset-0 flex items-center justify-center text-white text-lg font-semibold pointer-events-none">
-      Tap anywhere to Enable Camera
-    </div>
-  )}
-  {/* ✅ Video element with relative positioning */}
-  <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
-
-</div>
-
+            <div className="relative w-full h-full">
+              <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
+            </div>
             <div className="absolute bottom-5 flex justify-center space-x-6">
               <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
                 <FaCamera className="text-black text-3xl" />
@@ -157,8 +138,12 @@ const ImagePickerModal = ({ onClose }) => {
             </div>
           </>
         ) : (
-          <button onClick={startCamera} className="text-white text-base p-3 bg-gray-800 rounded-lg">
-            Tap to Enable Camera permissions
+          <button
+            onClick={startCamera}
+            disabled={isCameraLoading}
+            className="text-white text-base p-3 bg-gray-800 rounded-lg"
+          >
+            {isCameraLoading ? "Starting Camera..." : "Tap to Enable Camera"}
           </button>
         )}
         <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
