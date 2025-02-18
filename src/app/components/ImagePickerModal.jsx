@@ -136,22 +136,17 @@ const ImagePickerModal = ({ onClose }) => {
         ) : cameraEnabled && cameraPermission ? (
           <>
           <div className="relative w-full h-full">
-  {/* ✅ Video element with relative positioning */}
-  <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
-
-  {/* ✅ Show message only if camera is NOT enabled, positioned inside video */}
-  {!cameraEnabled && (
+            {!cameraEnabled && (
     <div className="absolute inset-0 flex items-center justify-center text-white text-lg font-semibold pointer-events-none">
-      Tap to Enable Camera
+      Tap anywhere to Enable Camera
     </div>
   )}
+  {/* ✅ Video element with relative positioning */}
+  <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
+  {/* ✅ Show message only if camera is NOT enabled, positioned inside video */}
 </div>
 
-
             <div className="absolute bottom-5 flex justify-center space-x-6">
-
-
-
               <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
                 <FaCamera className="text-black text-3xl" />
               </button>
