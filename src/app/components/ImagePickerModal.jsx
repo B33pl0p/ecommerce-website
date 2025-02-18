@@ -37,12 +37,23 @@ const ImagePickerModal = ({ onClose }) => {
         return;
       }
   
-      console.log("Waiting for user interaction...");
+      console.log("Simulating user interaction...");
   
+      // Create a hidden button to "click" programmatically
+      const fakeButton = document.createElement("button");
+      document.body.appendChild(fakeButton);
+  
+      // Dispatch a click event on the button after a small delay
+      setTimeout(() => {
+        fakeButton.click();
+        document.body.removeChild(fakeButton); // Cleanup
+      }, 500); // Adjust the delay as needed
+  
+      // Add event listener for real user interaction as a fallback
       document.body.addEventListener(
         "click",
         async () => {
-          console.log("User clicked, starting camera...");
+          console.log("User clicked (or simulated), starting camera...");
   
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
