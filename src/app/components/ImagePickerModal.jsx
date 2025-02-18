@@ -142,7 +142,8 @@ const ImagePickerModal = ({ onClose }) => {
     </div>
   )}
   {/* ✅ Video element with relative positioning */}
-  <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-5/6 object-contain bg-gray-900" />
+  <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
+
 </div>
 
             <div className="absolute bottom-5 flex justify-center space-x-6">
