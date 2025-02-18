@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import categories from "./categories";
+import { useRouter } from "next/navigation";
 import { FaCamera, FaImages, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import IP_ADDRESSES from "./IPAddresses";
@@ -13,6 +14,7 @@ const ImagePickerModal = ({ onClose }) => {
   const [cameraPermission, setCameraPermission] = useState(null);
   const cameraStreamRef = useRef(null);
   const { setSearchResults } = useSearch();
+  const router = useRouter();
 
   useEffect(() => {
     startCamera();
@@ -88,6 +90,7 @@ const ImagePickerModal = ({ onClose }) => {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
       setSearchResults(response.data.result);
+      router.push("/ResultsScreen");
       onClose();
     } catch (error) {
       console.error("Error uploading image:", error);
