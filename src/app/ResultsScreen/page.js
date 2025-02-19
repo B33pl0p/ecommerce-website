@@ -9,13 +9,10 @@ export default function ResultsScreen() {
   const { searchResults } = useSearch();
 
   return (
-    <div className="container mx-auto px-6">
+    <div className="container px-2">
       <Header>
       </Header>
-      <div className="mt-6 mb-4">
         <SearchBar />
-      </div>
-
       <h1 className="text-2xl font-semibold text-gray-700 text-center mt-4">Search Results</h1>
       
       {/* ✅ Show results if available */}
