@@ -1,14 +1,20 @@
-"use client"
+"use client";
 import Image from "next/image";
+import Link from "next/link";
 import { FaBell, FaComment, FaShoppingCart, FaUserCircle } from "react-icons/fa";
-
+import { Pacifico } from "next/font/google";
+const pacifico = Pacifico({ subsets: ["latin"], weight: "400" });
 const Header = () => {
+
   return (
-    <div className="flex justify-between items-center px-6 py-4 bg-white shadow-lg border-b border-gray-200">
-      {/* Logo & Title */}
-      <div className="flex items-center space-x-3">
-        <Image src="/logo_c.png" alt="Logo" width={40} height={40} className="rounded-full" />
-        <h1 className="text-3xl font-bold text-gray-800">Bazaar</h1>
+    <div className="flex justify-between items-center py-4 bg-white shadow-lg border-b border-gray-200">
+      <div className="flex items-center space-x-2">
+        <Link href="/">
+          <Image src="/logo_c.png" alt="Logo" width={40} height={40} className="rounded-full cursor-pointer" />
+        </Link>
+        <h1 className={`${pacifico.className} text-3xl text-gray-800`}>
+          Bazaar
+        </h1>
       </div>
 
       {/* Icons */}
