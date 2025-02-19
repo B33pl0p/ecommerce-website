@@ -22,34 +22,45 @@ const ImagePickerModal = ({ onClose }) => {
     return () => stopCamera();
   }, []);
 
-  const startCamera = async () => {
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.error("Camera API not supported.");
-        setCameraPermission(false);
-        return;
-      }
+ const startCamera = async () => {
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error("Camera API not supported.");
+      setCameraPermission(false);
+      return;
+    }
 
-      const permission = await navigator.permissions.query({ name: "camera" });
+    const permission = await navigator.permissions.query({ name: "camera" });
 
-      if (permission.state === "denied") {
-        console.error("Camera permission denied by user settings.");
-        setCameraPermission(false);
-        return;
-      }
-      
-      alert("Tap anywhere on the screen to start camera")
-      console.log("Waiting for user interaction...");
-        
-      document.body.addEventListener(
-        "click",
-        async () => {
-          console.log("User clicked, starting camera...");
+    if (permission.state === "denied") {
+      console.error("Camera permission denied by user settings.");
+      setCameraPermission(false);
+      alert("Camera access is blocked. Please allow access in browser settings.");
+      return;
+    }
 
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-          });
+    alert("Tap anywhere on the screen to start the camera");
+    console.log("Waiting for user interaction...");
 
+    document.body.addEventListener(
+      "click",
+      async () => {
+        console.log("User clicked, starting camera...");
+
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+        // Default to lower resolution for compatibility
+        let constraints = {
+          video: {
+            facingMode: "environment",
+            width: { ideal: isMobile ? 1920 : 1280 }, 
+            height: { ideal: isMobile ? 1080 : 720 },  
+            frameRate: { ideal: 30 }
+          }
+        };
+
+        try {
+          let stream = await navigator.mediaDevices.getUserMedia(constraints);
           console.log("Camera stream received:", stream);
           setCameraEnabled(true);
           setCameraPermission(true);
@@ -57,14 +68,37 @@ const ImagePickerModal = ({ onClose }) => {
           if (cameraStreamRef.current) {
             cameraStreamRef.current.srcObject = stream;
           }
-        },
-        { once: true } // Runs only once to prevent multiple calls
-      );
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      setCameraPermission(false);
-    }
-  };
+        } catch (error) {
+          console.error("Error starting camera with high resolution, retrying with lower settings:", error);
+
+          // Fallback to lower resolution
+          constraints.video.width = { ideal: 640 };
+          constraints.video.height = { ideal: 480 };
+
+          try {
+            let fallbackStream = await navigator.mediaDevices.getUserMedia(constraints);
+            console.log("Fallback Camera stream received:", fallbackStream);
+            setCameraEnabled(true);
+            setCameraPermission(true);
+
+            if (cameraStreamRef.current) {
+              cameraStreamRef.current.srcObject = fallbackStream;
+            }
+          } catch (fallbackError) {
+            console.error("Failed to start camera even with low resolution:", fallbackError);
+            alert("Could not access the camera. Please check your browser settings.");
+          }
+        }
+      },
+      { once: true }
+    );
+  } catch (error) {
+    console.error("Unexpected error starting camera:", error);
+    alert("An error occurred while accessing the camera. Try refreshing the page.");
+    setCameraPermission(false);
+  }
+};
+
 
   const stopCamera = () => {
     if (cameraStreamRef.current?.srcObject) {
@@ -114,50 +148,75 @@ const ImagePickerModal = ({ onClose }) => {
     }
   };
 
-  const uploadImage = async (file) => {
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const response = await axios.post(`${IP_ADDRESSES.IP}/upload_image?similarity_threshold=0.7`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+ const uploadImage = async (file) => {
+  setIsUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await axios.post(`${IP_ADDRESSES.IP}/upload_image?similarity_threshold=0.75&top_k=15`, formData, { 
+      headers: { "Content-Type": "multipart/form-data" } 
+    });
+
+    if (response.data.result && response.data.result.length > 0) {
       setSearchResults(response.data.result);
       router.push("/ResultsScreen");
-      onClose();
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    } finally {
-      setIsUploading(false);
+    } else {
+      alert("No product found with sufficient similarity.");
     }
-  };
+
+    onClose();
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    alert("Failed to upload image. Please try again.");
+  } finally {
+    setIsUploading(false);
+  }
+};
+
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-      <div className="relative bg-black w-full h-full flex flex-col items-center justify-center">
-        {isUploading ? (
-          <p className="text-white text-lg">Uploading...</p>
-        ) : (
-          <>
-            <div className="relative w-full h-full">
-              <video ref={cameraStreamRef} autoPlay playsInline className="w-full h-full object-contain bg-gray-900" />
-            </div>
-  
-            <div className="absolute bottom-5 flex justify-center space-x-6">
-              <button onClick={captureImage} className="bg-white p-4 rounded-full hover:bg-gray-200">
-                <FaCamera className="text-black text-3xl" />
-              </button>
-              <label className="bg-white p-4 rounded-full hover:bg-gray-200 cursor-pointer">
-                <FaImages className="text-black text-3xl" />
-                <input type="file" accept="image/*" className="hidden" onChange={selectFromGallery} />
-              </label>
-            </div>
-          </>
-        )}
-        <button onClick={onClose} className="absolute top-5 right-5 bg-white p-2 rounded-full hover:bg-gray-300">
-          <FaTimes className="text-black text-2xl" />
-        </button>
-      </div>
+  <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+    <div className="relative w-full h-full flex flex-col items-center justify-center">
+      {isUploading ? (
+        <p className="text-white text-lg">Uploading...</p>
+      ) : (
+        <>
+          {/* Full-Screen Camera Preview */}
+          <video
+            ref={cameraStreamRef}
+            autoPlay
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+
+          {/* Overlay Buttons */}
+          <div className="absolute bottom-14 flex justify-center items-center w-full">
+            {/* Gallery Button (Pushed Left) */}
+            <label className="absolute left-10 p-4 rounded-full cursor-pointer">
+              <FaImages className="text-white text-3xl" />
+              <input type="file" accept="image/*" className="hidden" onChange={selectFromGallery} />
+            </label>
+
+            {/* Capture Button (Exactly Centered) */}
+            <button onClick={captureImage} className="p-6 rounded-full border-4 border-white">
+              <FaCamera className="text-white text-5xl" />
+            </button>
+          </div>
+
+          {/* Close Button (Top-Right) */}
+          <button onClick={onClose} className="absolute top-6 right-6">
+            <FaTimes className="text-white text-3xl" />
+          </button>
+
+          {/* Capture Text */}
+          <p className="absolute bottom-4 text-white text-lg">Capture or Select an Image</p>
+        </>
+      )}
     </div>
-  );
+  </div>
+);
+
+
   
 };
 
