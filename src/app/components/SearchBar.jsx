@@ -21,7 +21,7 @@ export default function SearchBar() {
     if (e.key === "Enter" && query.trim()) {
       try {
         const response = await axios.post(
-          `${IP_ADDRESSES.IP}/upload_text`,
+          `${IP_ADDRESSES.IP}/upload_text?similarity_threshold=0.8&top_k=20`,
           { query_text: query },
           { headers: { "Content-Type": "application/json" } }
         );
