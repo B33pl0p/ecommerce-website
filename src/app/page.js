@@ -82,6 +82,8 @@ export default function Home() {
       <CategoryGrid onSelectCategory={handleCategorySelect} />
 
       <h2 className="text-2xl font-semibold text-gray-700 text-center mt-8">Featured Products</h2>
+      <h2 className="text-2xl font-semibold text-gray-700 text-center mt-8">SIte down due to AWS billing hehe</h2>
+
 
       {/* ✅ Product List */}
       <ProductGrid products={products} />
